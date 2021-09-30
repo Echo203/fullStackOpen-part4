@@ -12,8 +12,7 @@ const totalLikes = (listOfBlogPosts) => {
 const favoriteBlog = (listOfBlogPosts) => {
   let mostLikedPost = listOfBlogPosts[0]
   listOfBlogPosts.forEach((post) => {
-		console.log(`post`, post)
-		console.log(`mostLikedPost`, mostLikedPost)
+
 		if (post.likes >= mostLikedPost.likes) {
       mostLikedPost = post;
     }
