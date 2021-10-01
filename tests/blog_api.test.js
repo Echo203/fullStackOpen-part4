@@ -19,7 +19,10 @@ test('There are six blog posts in DB', async () => {
     expect(response.body).toHaveLength(helper.initialPosts.length)
 })
 
-
+test('Identifier is called "ID"', async () => {
+  const response = await api.get('/api/blogs')
+  expect(response.body[0].id).toBeDefined()
+})
 
 
 afterAll(() => {
