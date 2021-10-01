@@ -51,4 +51,21 @@ const initialPosts = [
     }  
 ]
 
-module.exports = {initialPosts}
+const singlePost = {
+    _id: "5a422aa71b54a676234543fs3",
+    title: "For All Mankind",
+    author: "No idea",
+    url: "google.com",
+    likes: 3,
+    __v: 0,
+  }
+
+const singlePostWithoutLikesProperity = {
+    _id: "5a422aa71b54a676234543fs3",
+    title: "For All Mankind",
+    author: "No idea",
+    url: "google.com",
+    __v: 0,
+  }
+
+module.exports = {initialPosts, singlePost, singlePostWithoutLikesProperity}

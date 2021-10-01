@@ -24,6 +24,30 @@ test('Identifier is called "ID"', async () => {
   expect(response.body[0].id).toBeDefined()
 })
 
+//POST method
+test('Succesful post method', async () => {
+  await api
+  .post('/api/blogs')
+  .send(helper.singlePost)
+  .expect(201)
+  .expect('Content-Type', /application\/json/)
+
+  const updatedBlogList = await api.get('/api/blogs')
+  expect(updatedBlogList.body).toHaveLength(helper.initialPosts.length + 1)
+
+  const namesInBlogPostAfterUpdate = updatedBlogList.body.map(r => r.title)
+  expect(namesInBlogPostAfterUpdate).toContain(helper.singlePost.title)
+})
+
+//Default like value
+test('Default likes value, if missing is set to 0', async () => {
+  await api
+    .post('/api/blogs')
+    .send(helper.singlePostWithoutLikesProperity)
+  
+  const response = await api.get('/api/blogs')
+  expect(response.body[response.body.length -1].likes).toEqual(0)
+})
 
 afterAll(() => {
     mongoose.connection.close()
