@@ -16,6 +16,7 @@ blogRouter.get('/', async (request, response) => {
     
     const savedBlog = await blogObject.save()
     response.status(201).json(savedBlog)
+    
   })
 
 module.exports = blogRouter

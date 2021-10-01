@@ -49,6 +49,20 @@ test('Default likes value, if missing is set to 0', async () => {
   expect(response.body[response.body.length -1].likes).toEqual(0)
 })
 
+//Error handling - missing properities
+test('Expecting 400, missing properities post', async () => {
+  const dummyPost = {
+    author: "No idea",
+    likes: 3
+  }
+  
+  await api
+      .post('/api/blogs')
+      .send(dummyPost)
+      .expect(400)
+      
+})
+
 afterAll(() => {
     mongoose.connection.close()
   })
