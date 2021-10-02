@@ -63,6 +63,21 @@ test('Expecting 400, missing properities post', async () => {
       
 })
 
+//DELETE method
+test('Deleting valid note', async () => {
+  const idToDelete = helper.initialPosts[0]._id
+
+  await api
+    .delete(`/api/blogs/${idToDelete}`)
+    .expect(204)
+  
+  const response = await api.get('/api/blogs')
+  expect(response.body.length).toEqual(helper.initialPosts.length -1)
+
+  const newSetOfPosts = response.body.map(r => r.title)
+  expect(newSetOfPosts).not.toContain(helper.initialPosts[0].title)
+})
+
 afterAll(() => {
     mongoose.connection.close()
   })
