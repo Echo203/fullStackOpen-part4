@@ -78,6 +78,20 @@ test('Deleting valid note', async () => {
   expect(newSetOfPosts).not.toContain(helper.initialPosts[0].title)
 })
 
+//PUT method - updating likes
+
+test('Updating likes value, on already existing note', async () => {
+  const postToUpdate = helper.initialPosts[0]
+  const updatedLikesValue = {likes: 10}
+
+  await api
+    .put(`/api/blogs/${postToUpdate._id}`)
+    .send(updatedLikesValue)
+  
+  const response = await api.get('/api/blogs')
+  expect(response.body[0].likes).toEqual(updatedLikesValue.likes)
+})
+
 afterAll(() => {
     mongoose.connection.close()
   })
