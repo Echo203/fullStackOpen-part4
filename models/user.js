@@ -5,17 +5,18 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        mingLength: 3,
+        minLength: 3,
         unique: true
     },
     name: String,
-    passwordHash: String,
+    passwordHash: {
+        type: String,
+        required: true
+    },
     blogPosts: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Blog',
-            required: true,
-            minLength: 3
+            ref: 'Blog'
         }
     ],
 })
