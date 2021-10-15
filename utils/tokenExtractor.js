@@ -3,8 +3,9 @@ const tokenExtractor = (req, res, next) => {
     if(authorization && authorization.toLowerCase().startsWith('baerer ')){
       req.token = authorization.substring(7)
       next()
+    } else {
+      res.status(401).json({ error: "invalid token" })
     }
-    next()
   }
 
   module.exports = tokenExtractor
