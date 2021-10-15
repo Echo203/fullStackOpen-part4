@@ -7,7 +7,8 @@ const initialPosts = [
         author: "Michael Chan",
         url: "https://reactpatterns.com/",
         likes: 7,
-        __v: 0
+        __v: 0,
+        user: "616972be5591822384e5e733"
     },
     {
         _id: "5a422aa71b54a676234d17f8",
@@ -68,4 +69,20 @@ const singlePostWithoutLikesProperity = {
     __v: 0,
   }
 
-module.exports = {initialPosts, singlePost, singlePostWithoutLikesProperity}
+  const initialValidUser = {
+    username: "Toronto",
+    password: "toronto",
+    _id: "616972be5591822384e5e733"
+}
+
+  const validUser = {
+      username: "Tornado",
+      password: "tornado"
+  }
+
+  const invalidUser = {
+      username: "q",
+      password: "XDDDDD"
+  }
+
+module.exports = {initialPosts, singlePost, singlePostWithoutLikesProperity, validUser, invalidUser, initialValidUser}

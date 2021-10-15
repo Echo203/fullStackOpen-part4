@@ -3,95 +3,137 @@ const supertest = require("supertest");
 const helper = require("../tests/test_helper");
 const app = require("../app");
 const api = supertest(app);
+const bcrypt = require("bcrypt");
 
 const Blog = require("../models/blog");
+const User = require("../models/user");
 
 beforeEach(async () => {
-  await Blog.deleteMany({});
+  //Reseting user DB with one valid credentials for tests
+  await User.deleteMany({});
+  const saltRounds = 10;
+  const passwordHash = await bcrypt.hash(
+    helper.initialValidUser.password,
+    saltRounds
+  );
 
-  const blogObjects = helper.initialPosts.map(post => new Blog(post))
-  const arrayOfPromisses = blogObjects.map(blogObject => blogObject.save())
-  await Promise.all(arrayOfPromisses)
+  const user = new User({
+    username: helper.initialValidUser.username,
+    passwordHash,
+    _id: helper.validUser._id
+  });
+
+  const initialValidUser = new User(user);
+  await initialValidUser.save();
+
+  //Reseting blog DB
+  await Blog.deleteMany({});
+  const blogObjects = helper.initialPosts.map((post) => new Blog(post));
+  const arrayOfPromisses = blogObjects.map((blogObject) => blogObject.save());
+  await Promise.all(arrayOfPromisses);
 });
 
-test('There are six blog posts in DB', async () => {
-    const response = await api.get('/api/blogs')
-    expect(response.body).toHaveLength(helper.initialPosts.length)
-})
+test("There are six blog posts in DB", async () => {
+  const response = await api.get("/api/blogs");
+  expect(response.body).toHaveLength(helper.initialPosts.length);
+});
 
 test('Identifier is called "ID"', async () => {
-  const response = await api.get('/api/blogs')
-  expect(response.body[0].id).toBeDefined()
-})
+  const response = await api.get("/api/blogs");
+  expect(response.body[0].id).toBeDefined();
+});
 
 //POST method
-test('Succesful post method', async () => {
+test("Succesful post method", async () => {
+  //Login in as valid user named "Tornado"
+  const res = await api.post("/api/login").send(helper.initialValidUser);
+
+  const token = res.body.token;
+
   await api
-  .post('/api/blogs')
-  .send(helper.singlePost)
-  .expect(201)
-  .expect('Content-Type', /application\/json/)
+    .post("/api/blogs")
+    .send(helper.singlePost)
+    .set({ Authorization: `baerer ${token}` })
+    .expect(201)
+    .expect("Content-Type", /application\/json/);
 
-  const updatedBlogList = await api.get('/api/blogs')
-  expect(updatedBlogList.body).toHaveLength(helper.initialPosts.length + 1)
+  const updatedBlogList = await api.get("/api/blogs");
+  expect(updatedBlogList.body).toHaveLength(helper.initialPosts.length + 1);
 
-  const namesInBlogPostAfterUpdate = updatedBlogList.body.map(r => r.title)
-  expect(namesInBlogPostAfterUpdate).toContain(helper.singlePost.title)
-})
+  const namesInBlogPostAfterUpdate = updatedBlogList.body.map((r) => r.title);
+  expect(namesInBlogPostAfterUpdate).toContain(helper.singlePost.title);
+});
 
 //Default like value
-test('Default likes value, if missing is set to 0', async () => {
+test("Default likes value, if missing is set to 0", async () => {
+  const res = await api.post("/api/login").send(helper.initialValidUser);
+  const token = res.body.token;
+
   await api
-    .post('/api/blogs')
+    .post("/api/blogs")
     .send(helper.singlePostWithoutLikesProperity)
-  
-  const response = await api.get('/api/blogs')
-  expect(response.body[response.body.length -1].likes).toEqual(0)
-})
+    .set({ Authorization: `baerer ${token}` });
+
+  const response = await api.get("/api/blogs");
+  expect(response.body[response.body.length - 1].likes).toEqual(0);
+});
 
 //Error handling - missing properities
-test('Expecting 400, missing properities post', async () => {
+test("Expecting 400, missing properities post", async () => {
+  const res = await api.post("/api/login").send(helper.initialValidUser);
+  const token = res.body.token;
+
   const dummyPost = {
     author: "No idea",
-    likes: 3
-  }
-  
+    likes: 3,
+  };
+
   await api
-      .post('/api/blogs')
-      .send(dummyPost)
-      .expect(400)
-      
-})
+    .post("/api/blogs")
+    .send(dummyPost)
+    .set({ Authorization: `baerer ${token}` })
+    .expect(400);
+});
 
 //DELETE method
-test('Deleting valid note', async () => {
-  const idToDelete = helper.initialPosts[0]._id
+test("Deleting valid note", async () => {
+  //Logging in
+  const res = await api.post("/api/login").send(helper.initialValidUser);
+  const token = res.body.token;
+
+  await api
+  .post("/api/blogs")
+  .send(helper.singlePost)
+  .set({ Authorization: `baerer ${token}` })
+
+  const idToDelete = helper.singlePost._id;
 
   await api
     .delete(`/api/blogs/${idToDelete}`)
-    .expect(204)
-  
-  const response = await api.get('/api/blogs')
-  expect(response.body.length).toEqual(helper.initialPosts.length -1)
+    .set({ Authorization: `baerer ${token}` })
+    .expect(204);
 
-  const newSetOfPosts = response.body.map(r => r.title)
-  expect(newSetOfPosts).not.toContain(helper.initialPosts[0].title)
-})
+  const response = await api.get("/api/blogs");
+  //Length will not change in
+  expect(response.body.length).toEqual(helper.initialPosts.length - 1);
+
+  const newSetOfPosts = response.body.map((r) => r.title);
+  expect(newSetOfPosts).not.toContain(helper.initialPosts[0].title);
+});
 
 //PUT method - updating likes
 
-test('Updating likes value, on already existing note', async () => {
-  const postToUpdate = helper.initialPosts[0]
-  const updatedLikesValue = {likes: 10}
+test("Updating likes value, on already existing note", async () => {
+  const postToUpdate = helper.initialPosts[0];
+  const updatedLikesValue = { likes: 10 };
 
-  await api
-    .put(`/api/blogs/${postToUpdate._id}`)
-    .send(updatedLikesValue)
-  
-  const response = await api.get('/api/blogs')
-  expect(response.body[0].likes).toEqual(updatedLikesValue.likes)
-})
+  await api.put(`/api/blogs/${postToUpdate._id}`).send(updatedLikesValue);
 
-afterAll(() => {
-    mongoose.connection.close()
-  })
+  const response = await api.get("/api/blogs");
+  expect(response.body[0].likes).toEqual(updatedLikesValue.likes);
+});
+
+afterAll(async () => {
+  await User.deleteMany({});
+  mongoose.connection.close();
+});
