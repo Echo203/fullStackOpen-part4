@@ -123,7 +123,7 @@ test("Deleting valid note", async () => {
   expect(newSetOfPosts).not.toContain(helper.singlePost.title);
 });
 
-//
+//DELETE method - without valid token
 test("Deleting note with invalid token fails", async () => {
   //Logging in
   const res = await api.post("/api/login").send(helper.initialValidUser);
