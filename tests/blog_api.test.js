@@ -95,7 +95,7 @@ test("Expecting 400, missing properities post", async () => {
     .expect(400);
 });
 
-//DELETE method
+//DELETE method - valid
 test("Deleting valid note", async () => {
   //Logging in
   const res = await api.post("/api/login").send(helper.initialValidUser);
@@ -121,6 +121,26 @@ test("Deleting valid note", async () => {
 
   const newSetOfPosts = response.body.map((r) => r.title);
   expect(newSetOfPosts).not.toContain(helper.singlePost.title);
+});
+
+//
+test("Deleting note with invalid token fails", async () => {
+  //Logging in
+  const res = await api.post("/api/login").send(helper.initialValidUser);
+  const token = res.body.token;
+
+  const newBlog = await api
+    .post("/api/blogs")
+    .send(helper.singlePost)
+    .set({ Authorization: `baerer ${token}` })
+    .expect(201)
+
+  const idToDelete = newBlog.body.id
+
+  //Not providing authorization header
+  await api
+    .delete(`/api/blogs/${idToDelete}`)
+    .expect(401);
 });
 
 //PUT method - updating likes
