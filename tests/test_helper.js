@@ -53,7 +53,7 @@ const initialPosts = [
 ]
 
 const singlePost = {
-    _id: "5a422aa71b54a676234543fs3",
+    _id: "5a422aa71b54a676234543fs4",
     title: "For All Mankind",
     author: "No idea",
     url: "google.com",
@@ -72,7 +72,6 @@ const singlePostWithoutLikesProperity = {
   const initialValidUser = {
     username: "Toronto",
     password: "toronto",
-    _id: "616972be5591822384e5e733"
 }
 
   const validUser = {

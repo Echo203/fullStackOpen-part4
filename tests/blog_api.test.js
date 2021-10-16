@@ -101,24 +101,26 @@ test("Deleting valid note", async () => {
   const res = await api.post("/api/login").send(helper.initialValidUser);
   const token = res.body.token;
 
-  await api
-  .post("/api/blogs")
-  .send(helper.singlePost)
-  .set({ Authorization: `baerer ${token}` })
+  const newBlog = await api
+    .post("/api/blogs")
+    .send(helper.singlePost)
+    .set({ Authorization: `baerer ${token}` })
+    .expect(201)
 
-  const idToDelete = helper.singlePost._id;
+  const idToDelete = newBlog.body.id
 
   await api
     .delete(`/api/blogs/${idToDelete}`)
+    .send({ })
     .set({ Authorization: `baerer ${token}` })
     .expect(204);
 
   const response = await api.get("/api/blogs");
-  //Length will not change in
-  expect(response.body.length).toEqual(helper.initialPosts.length - 1);
+  //Length will not change in the final form, we still check if note was posted and later deleted
+  expect(response.body.length).toEqual(helper.initialPosts.length);
 
   const newSetOfPosts = response.body.map((r) => r.title);
-  expect(newSetOfPosts).not.toContain(helper.initialPosts[0].title);
+  expect(newSetOfPosts).not.toContain(helper.singlePost.title);
 });
 
 //PUT method - updating likes
@@ -133,7 +135,6 @@ test("Updating likes value, on already existing note", async () => {
   expect(response.body[0].likes).toEqual(updatedLikesValue.likes);
 });
 
-afterAll(async () => {
-  await User.deleteMany({});
+afterAll(() => {
   mongoose.connection.close();
 });
